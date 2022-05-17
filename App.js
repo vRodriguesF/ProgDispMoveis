@@ -1,5 +1,5 @@
 import { StatusBar } from "expo-status-bar";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Text,
@@ -9,16 +9,92 @@ import {
   Button,
   TouchableOpacity,
 } from "react-native";
+import axios from "axios";
 import { LinearGradient } from 'expo-linear-gradient';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { initializeApp } from "firebase/app";
+import { getAnalytics } from "firebase/analytics";
+import FlashMessage from "react-native-flash-message";
+import { showMessage, hideMessage } from "react-native-flash-message";
 import { Header } from 'react-native-elements';
 import { ListItem, Avatar } from 'react-native-elements';
 import { Icon } from 'react-native-elements';
 
 
-function ChangeContact(){
-  const navigation = useNavigation();
+function ChangeContact({route}){
+  const navigation = useNavigation({route});
+
+    const [getNome,setNome] = useState();
+    const [getEmail,setEmail] = useState();
+    const [getTelefone,setTelefone] = useState();
+    const [getCpf,setCpf] = useState();
+    const [getId,setId] = useState();
+    const [getAlterar,setAlterar] = useState();
+
+  useEffect(()=>{
+    if(route.params){
+          const { nome } =  route.params 
+          const { telefone } =  route.params 
+          const { email } =  route.params 
+          const { id } =  route.params
+          const { cpf } =  route.params
+          const { alterar } =  route.params
+
+          setNome(nome)
+          setTelefone(telefone)
+          setCpf(email)
+          setId(id)
+          setAlterar(alterar)
+          setCpf(cpf)
+
+    }
+  },[])  
+
+  async function alterarDados(){
+    await axios.put('http://professornilson.com/testeservico/clientes/'+getId,{
+     nome:getNome,
+     email:getEmail,
+     telefone:getTelefone,
+     cpf: getCpf,  
+    }
+    )
+    .then(function (response) {
+        showMessage({
+            message: "Registro alterado com sucesso!",
+            type: "success",
+          });
+      console.log(response);
+    })
+    .catch(function (error) {
+        showMessage({
+            message: "Algum erro aconteceu!",
+            type: "info",
+          });
+        console.log(error);
+    });
+}
+function excluirDados(){
+  axios.delete('http://professornilson.com/testeservico/clientes/'+getId
+ )
+ .then(function (response) {
+     setNome('')
+     setTelefone('')
+     setCpf('')
+     showMessage({
+         message: "Registro excluído com sucesso!",
+         type: "success",
+       });
+   console.log(response);
+ })
+ .catch(function (error) {
+     showMessage({
+         message: "Algum erro aconteceu!",
+         type: "info",
+       });
+     console.log(error);
+ });
+}
   return(
     <LinearGradient
         colors={['#22c1c3', '#62fd2d']}
@@ -33,11 +109,14 @@ function ChangeContact(){
 
     <Image style={styles.imageSignUp} source={require("./assets/UserIcon.png")} />
       <View style={styles.container}>
+      
         <View style={styles.inputView}>
         <TextInput
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Nome"
+          onChangeText={text => setNome(text)}
+            value={getNome} 
         
         />
     </View>
@@ -47,6 +126,8 @@ function ChangeContact(){
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Email"
+          onChangeText={text => setEmail(text)}
+          value={getEmail}
          
         />
     </View>
@@ -56,14 +137,24 @@ function ChangeContact(){
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Telefone"
+          onChangeText={text => setTelefone(text)}
+          value={getTelefone}
         />
-        
+    </View>
+    <View style={styles.inputView}>
+        <TextInput
+          style={styles.TextInput}
+          placeholderTextColor="#545455"
+          placeholder="CPF"
+          onChangeText={text => setCpf(text)}
+          value={getCpf}
+        />   
     </View>
 
-    <TouchableOpacity style={styles.signUpBtn} onPress={()=>navigation.navigate('Logged')}>
+    <TouchableOpacity style={styles.signUpBtn} onPress={()=> alterarDados()}>
         <Text style={styles.loginText}>Alterar</Text>
     </TouchableOpacity>
-    <TouchableOpacity style={styles.signUpBtn} onPress={()=>navigation.navigate('Logged')}>
+    <TouchableOpacity style={styles.signUpBtn} onPress={()=>excluirDados()}>
         <Text style={styles.loginText}>Deletar</Text>
     </TouchableOpacity>
 </View>
@@ -76,8 +167,60 @@ function ChangeContact(){
 }
 
 
-function CreateContact(){
+function CreateContact({route}){
   const navigation = useNavigation();
+
+  const [getNome,setNome] = useState();
+  const [getTelefone,setTelefone] = useState();
+  const [getEmail, setEmail] = useState();
+  const [getCpf, setCpf] = useState();
+
+
+  useEffect(()=>{
+    if(route.params){
+        const { nome } =  route.params 
+        const { telefone } =  route.params 
+        const { email } =  route.params 
+        const { cpf } =  route.params 
+        
+    
+        
+
+        setNome(nome)
+        setTelefone(telefone)  
+        setEmail(email)
+        setCpf(cpf)
+        
+     
+    }
+
+   
+},[]) 
+async function inserirDados(){
+        
+  axios.post('http://professornilson.com/testeservico/clientes', {
+      nome: getNome,
+      telefone: getTelefone,
+      email: getEmail,
+      cpf: getCpf
+    })
+    .then(function (response) {
+      setNome('');
+      setEmail('');
+      setTelefone('');
+      setCpf(''); 
+      showMessage({
+          message: "Registro Cadastrado com sucesso",
+          type: "success",
+        }); 
+      console.log(response);
+    })
+    .catch(function (error) {
+      console.log(error);
+    });     
+  
+}
+
   return(
     <LinearGradient
         colors={['#22c1c3', '#62fd2d']}
@@ -99,6 +242,8 @@ function CreateContact(){
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Nome"
+          onChangeText={text => setNome(text)}
+            value={getNome}
         
         />
     </View>
@@ -108,6 +253,8 @@ function CreateContact(){
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Email"
+          onChangeText={text => setEmail(text)}
+          value={getEmail}
          
         />
     </View>
@@ -117,10 +264,23 @@ function CreateContact(){
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Telefone"
-        />
-        
+          onChangeText={text => setTelefone(text)}
+          value={getTelefone}
+        />   
     </View>
-    <TouchableOpacity style={styles.signUpBtn} onPress={()=>navigation.navigate('Logged')}>
+
+    <View style={styles.inputView}>
+        <TextInput
+          style={styles.TextInput}
+          placeholderTextColor="#545455"
+          placeholder="CPF"
+          onChangeText={text => setCpf(text)}
+          value={getCpf}
+        />   
+    </View>
+
+
+    <TouchableOpacity style={styles.signUpBtn} onPress={()=>inserirDados()}>
         <Text style={styles.loginText}>Salvar</Text>
     </TouchableOpacity>
 
@@ -132,21 +292,22 @@ function CreateContact(){
 }
  
 
-function Logged(){
+function Logged({route}){
   const navigation = useNavigation();
+  const [getData, setData] = useState([]);
 
-  const list = [
-    {
-      name: 'Vinicius Rodrigues',
-      avatar_url: 'https://cdn-icons-png.flaticon.com/512/1373/1373255.png',
-      telephone: '81 985895228'
-    },
-    {
-      name: 'Elon Musk',
-      avatar_url: 'https://i.pinimg.com/originals/0f/53/82/0f5382103123a0c46be713b692cc6f1d.jpg',
-      telephone: '81 985899999'
+  useEffect(()=>{
+        
+    async function resgatarDados(){
+        const result = await axios(
+            'http://professornilson.com/testeservico/clientes',
+          );
+          setData(result.data);
     }
-  ]
+    resgatarDados();
+})
+
+ 
   
 return(
 
@@ -166,13 +327,21 @@ return(
 
 
 <View>
+  
+
   {
-    list.map((l, i) => (
-      <ListItem onPress={()=>navigation.navigate('ChangeContact')} key={i} bottomDivider> 
-        <Avatar  source={{uri: l.avatar_url}} />
+    getData.map((l, i) => (
+      <ListItem onPress={()=>navigation.navigate('ChangeContact',{ 
+      nome: l.nome,
+           telefone:l.telefone,
+           cpf:l.cpf,
+           id:l.id,
+           alterar:true,
+           } ) } key={i} bottomDivider> 
+        <Avatar  source={{uri: "https://s3-nftrend-storage.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/09/21154402/The-Derp.png"}} />
         <ListItem.Content  >
-          <ListItem.Title >{l.name}</ListItem.Title>
-          <ListItem.Subtitle>{l.telephone}</ListItem.Subtitle>
+          <ListItem.Title >{l.nome}</ListItem.Title>
+          <ListItem.Subtitle>{l.cpf}</ListItem.Subtitle>
         </ListItem.Content>
       </ListItem>
     ))
@@ -190,6 +359,10 @@ return(
 
 function SignUp(){
   const navigation = useNavigation();
+
+
+
+
   return(
   
 
@@ -225,9 +398,11 @@ function SignUp(){
  
     <View style={styles.inputView}>
         <TextInput
+        
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Nome"
+          
          
         />
     </View>
@@ -238,11 +413,12 @@ function SignUp(){
           placeholderTextColor="#545455"
           placeholder="Senha"
           secureTextEntry={true}
+          
          
         />
         
     </View>
-    <TouchableOpacity style={styles.signUpBtn} onPress={()=>navigation.navigate('Logged')}>
+    <TouchableOpacity style={styles.signUpBtn} onPress={()=>createUserWithEmailAndPassword(auth,)}>
         <Text style={styles.loginText} >Salvar</Text>
     </TouchableOpacity>
     
@@ -331,7 +507,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor:"fff",
+    backgroundColor:"white",
   },
   upBar:{
    justifyContent:"center",
@@ -383,7 +559,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
    },
   inputView: {
-    backgroundColor: "#fff",
+    backgroundColor: "white",
     borderStyle: "solid",
     borderWidth: 2,
     borderRadius: 20,
@@ -409,7 +585,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 40,
-    backgroundColor: "#fff",
+    backgroundColor: "white",
   },
   signUpBtn: {
     width: "80%",
@@ -420,7 +596,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     marginTop: 15,
-    backgroundColor: "#fff",
+    backgroundColor: "white",
   },
 
 
