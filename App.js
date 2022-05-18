@@ -14,6 +14,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { NavigationContainer, useNavigation } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { initializeApp } from "firebase/app";
+import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "firebase/auth";
 import { getAnalytics } from "firebase/analytics";
 import FlashMessage from "react-native-flash-message";
 import { showMessage, hideMessage } from "react-native-flash-message";
@@ -337,7 +338,7 @@ return(
            cpf:l.cpf,
            id:l.id,
            alterar:true,
-           } ) } key={i} bottomDivider> 
+           })} key={i} bottomDivider> 
         <Avatar  source={{uri: "https://s3-nftrend-storage.s3.sa-east-1.amazonaws.com/wp-content/uploads/2021/09/21154402/The-Derp.png"}} />
         <ListItem.Content  >
           <ListItem.Title >{l.nome}</ListItem.Title>
@@ -357,11 +358,42 @@ return(
 
 
 
-function SignUp(){
+function SignUp({route}){
   const navigation = useNavigation();
+  const[email, setEmail] = useState('')
+  const[senha, setSenha] = useState('')
 
+  const firebaseConfig = {
+    apiKey: "AIzaSyDC41OQvvhPrPGXgTtbEd1hWf1MiluBAqY",
+    authDomain: "vrodrigues-2ef17.firebaseapp.com",  
+    projectId: "vrodrigues-2ef17",  
+    storageBucket: "vrodrigues-2ef17.appspot.com", 
+    messagingSenderId: "615775668724",
+    appId: "1:615775668724:web:1fbd203c4605414a3f91a1",
+    measurementId: "G-ETBV5Y6T64"
+  };
+  
+  
+  // Initialize Firebase
+  
+  const app = initializeApp(firebaseConfig);
+  
+  const analytics = getAnalytics(app);
 
-
+  function cadastroFireBase() {
+    const auth = getAuth();
+    createUserWithEmailAndPassword(auth, email, senha)
+      .then((userCredential) => {
+        // Signed in
+        console.log('funcionando')
+        const user = userCredential.user;
+        navigation.navigate('Login')  
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  }
 
   return(
   
@@ -391,34 +423,24 @@ function SignUp(){
         <TextInput
           style={styles.TextInput}
           placeholderTextColor="#545455"
-          placeholder="Email"
+          TextInput placeholder="Email"
+           value={email} onChangeText={email=> setEmail(email)} 
         
         />
     </View>
- 
-    <View style={styles.inputView}>
-        <TextInput
-        
-          style={styles.TextInput}
-          placeholderTextColor="#545455"
-          placeholder="Nome"
-          
-         
-        />
-    </View>
-
     <View style={styles.inputView}>
         <TextInput
           style={styles.TextInput}
           placeholderTextColor="#545455"
           placeholder="Senha"
+           value={senha} onChangeText={senha => setSenha(senha)}
           secureTextEntry={true}
           
          
         />
         
     </View>
-    <TouchableOpacity style={styles.signUpBtn} onPress={()=>createUserWithEmailAndPassword(auth,)}>
+    <TouchableOpacity style={styles.signUpBtn} onPress={()=>{cadastroFireBase()}}>
         <Text style={styles.loginText} >Salvar</Text>
     </TouchableOpacity>
     
@@ -430,6 +452,39 @@ function SignUp(){
 function Login() {
   const navigation = useNavigation();
  
+  const [email, setEmail] = useState('')
+  const [senha, setSenha] = useState('')
+
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDC41OQvvhPrPGXgTtbEd1hWf1MiluBAqY",
+    authDomain: "vrodrigues-2ef17.firebaseapp.com",
+    projectId: "vrodrigues-2ef17",
+    storageBucket: "vrodrigues-2ef17.appspot.com",
+    messagingSenderId: "615775668724",
+    appId: "1:615775668724:web:1fbd203c4605414a3f91a1",
+    measurementId: "G-ETBV5Y6T64"
+  
+  };
+  
+  
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  function loginFireBase() {
+    const auth = getAuth();
+    signInWithEmailAndPassword(auth, email, senha)
+      .then((userCredential) => {
+        // Signed in
+        const user = userCredential.user;
+        navigation.navigate('Logged')
+      })
+      .catch((error) => {
+        const errorCode = error.code;
+        const errorMessage = error.message;
+      });
+  }
+
  
   return (
     
@@ -446,18 +501,22 @@ function Login() {
       <Text style={styles.textTelaLogin}>Tela de Login</Text>
       <StatusBar style="auto" />
       <Text style={styles.upInput}>Email</Text>
+
       <View style={styles.inputView}>
-        
         <TextInput
           style={styles.TextInput}
           placeholderTextColor="#003f5c"
-         
+          placeholder="E-mail" value={email} 
+          onChangeText={email=> setEmail(email)}
         />
       </View>
       <Text style={styles.upInput}>Senha</Text>
       <View style={styles.inputView}>
+
         <TextInput
           style={styles.TextInput}
+          placeholder="Senha" value={senha} 
+          onChangeText={senha=> setSenha(senha)}
           placeholderTextColor="#003f5c"
           secureTextEntry={true}
          
@@ -465,7 +524,7 @@ function Login() {
     </View>
   
   
-     <TouchableOpacity style={styles.loginBtn} onPress={()=>navigation.navigate('Logged')}>
+     <TouchableOpacity style={styles.loginBtn} onPress={()=>loginFireBase()}>
         <Text style={styles.loginText}>Entrar</Text>
       </TouchableOpacity>
       
